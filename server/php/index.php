@@ -1,36 +1,72 @@
 <?php
 
 
+/* Bootstrap */
 
-/*********************************************************************
-  SHA1 hash of the info page password, the preset password is the
-  empty string. You might change it to keep this information private.
-  Online hash generator: http://www.sha1.cz/
-*********************************************************************/
-define("PASSHASH", "da39a3ee5e6b4b0d3255bfef95601890afd80709");
+function normalize_path($path, $trailing_slash = false) {
 
+	$path = str_replace("\\", "/", $path);
+	return preg_match("#^(\w:)?/$#", $path) ? $path : (preg_replace('#/$#', '', $path) . ($trailing_slash ? "/" : ""));
+}
+
+if ($_SERVER['HTTP_X_HOST'] != $_SERVER['HTTP_HOST']){  // HTTP_HOST is always the same format username.server.feralhosting.com
+$xproxy = "/" . getenv("USER");                         // If the HOSTs don't match then insert this variable
+} else {                                                // If they do match then do this instead
+$xproxy = '';                                           // insert nothing. Basically, do nothing
+}                                                       // close
+
+define("APP_ABS_PATH", normalize_path(dirname(dirname(dirname(__FILE__)))));
+// define("APP_ABS_HREF", normalize_path(dirname(dirname(dirname(getenv("SCRIPT_NAME")))), true));
+define("APP_ABS_HREF", $xproxy . normalize_path(dirname(dirname(dirname(preg_replace('#^.*//#', '/', getenv("SCRIPT_NAME"))))), true)); // fixes lighttpd issues
+$url_parts = parse_url(getenv("REQUEST_URI"));
+define("ABS_HREF", $xproxy . normalize_path($url_parts["path"]), true);
 
 
 function normalized_require_once($lib) {
 
-    require_once(preg_replace("#[\\\\/]+#", "/", dirname(__FILE__) . "/inc/${lib}.php"));
+	require_once(APP_ABS_PATH . $lib);
 }
 
-normalized_require_once("util");
-normalized_require_once("setup");
-normalized_require_once("class-api");
-normalized_require_once("class-app");
-normalized_require_once("class-archive");
-normalized_require_once("class-item");
-normalized_require_once("class-thumb");
 
-setup();
-$app = new App();
+/* Fast exit on version check */
 
-if (has_request_param("action")) {
-    $api = new Api($app);
-    $api->apply();
+if (array_key_exists("version", $_REQUEST)) {
+
+	echo json_encode(array("code" => 0, "version" => "0.24.1", "href" => APP_ABS_HREF));
+	exit;
+}
+
+
+/* Load Libs */
+
+normalized_require_once("/server/php/inc/util.php");
+normalized_require_once("/server/php/inc/App.php");
+normalized_require_once("/server/php/inc/Item.php");
+
+
+/* Init */
+
+$app = new App(APP_ABS_PATH, APP_ABS_HREF, ABS_HREF);
+
+
+/* Run */
+
+if (array_key_exists("action", $_REQUEST)) {
+
+	header("Content-type: application/json;charset=utf-8");
+
+	normalized_require_once("/server/php/inc/Api.php");
+	$api = new Api($app);
+	$api->apply();
+
 } else {
-    define("FALLBACK", $app->get_fallback());
-    normalized_require_once("page");
+
+	header("Content-type: text/html;charset=utf-8");
+
+	$HREF = $app->get_app_abs_href();
+	$FALLBACK = $app->get_fallback();
+
+	normalized_require_once("/server/php/inc/page.php");
 }
+
+?>
