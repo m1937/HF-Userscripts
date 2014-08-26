@@ -25,7 +25,7 @@
    <div id="container">
        <?php
          // opens this directory
-         $myDirectory = opendir("/scripts");
+         $myDirectory = opendir("./scripts");
 
          // gets each entry
          while($entryName = readdir($myDirectory)) {
