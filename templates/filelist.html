@@ -1,0 +1,30 @@
+{% if files is defined %}
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+    <th>{{ _("Filename") }}</th>
+    <th>{{ _("Size") }}</th>
+    <th>{{ _("Upload date") }}</th>
+    <th>{{ _("Deletion date") }}</th>
+    <th>{{ _("Downloaded") }}</th>
+    <th></th>
+</tr>
+</thead>
+<tbody>
+{% for file in files %}
+<tr>
+    <td><a href="http://files.vepomsk.ru{{ url_for(".getfile", id=file.uuid, filename=file.name|urlquote) }}">{{ file.name }}</a></td>
+    <td>{{ file.size|filesize }}</td>
+    <td>{{ file.upload_date|datetime }}</td>
+    <td>{{ file.deletion_date|datetime }}</td>
+    <td><a href="#" rel="popover" data-title="{{ _("Download time") }}" data-content="{% for log in file.downloads %}{{ log.date|datetime }}<br>{% endfor %}" data-placement="left">{{ file.downloads|count }} {{ _("times") }}</a></td>
+    <td><a href="#" onclick="window.prompt('{{ _("Copy this to letter") }}', 'http://files.vepomsk.ru{{ url_for(".getfile", id=file.id, filename=file.name|urlquote) }}');" class="btn btn-small btn-success">{{ _("Link") }}</a>
+    <a href="#" onclick="$.ajax('{{ url_for(".deletefile", id=file.uuid) }}'); $(this).closest('tr').remove();" class="btn btn-small btn-warning">{{ _("Delete") }}</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<script type="text/javascript">
+$("[rel=popover]").popover();
+</script>
+{% endif %}
