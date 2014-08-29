@@ -7,7 +7,7 @@
 // @grant      GM_setValue
 // @grant      GM_deleteValue
 // @include      *hackforums.net/*
-// @version      1.0
+// @version      1.0.1
 // ==/UserScript==
 
 /* Your UID
