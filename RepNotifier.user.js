@@ -7,7 +7,7 @@
 // @grant      GM_setValue
 // @grant      GM_deleteValue
 // @include      *hackforums.net/*
-// @version      1.0.1
+// @version      1.0.2
 // ==/UserScript==
 
 /* Your UID
@@ -60,9 +60,4 @@ function run() {
 }
 
 run();
-
-setInterval(function() {
-    run();
-}, 1800000); 
-
 
